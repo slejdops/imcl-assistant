@@ -7,41 +7,81 @@ a given IBM Installation Manager repository using the imcl command-line tool.
 """
 
 import argparse
+import os
 import subprocess
 import sys
 import shutil
 
 
-def check_imcl_available():
+def check_imcl_available(imcl_path):
     """
-    Check if the imcl command is available in the system PATH.
+    Check if the imcl command is available.
+
+    Args:
+        imcl_path (str): Path to the imcl binary
 
     Returns:
         bool: True if imcl is available, False otherwise
     """
-    return shutil.which("imcl") is not None
+    if os.path.isabs(imcl_path):
+        return os.path.isfile(imcl_path) and os.access(imcl_path, os.X_OK)
+    return shutil.which(imcl_path) is not None
 
 
-def check_offerings(repo_path, required_offerings):
+def find_repositories(root_path):
+    """
+    Recursively search for IBM Installation Manager repositories.
+
+    Searches for directories containing repository.config files, which
+    indicate IBM IM repository locations.
+
+    Args:
+        root_path (str): Root directory to search
+
+    Returns:
+        list: List of repository paths found
+    """
+    repositories = []
+
+    if not os.path.isdir(root_path):
+        return [root_path]
+
+    for dirpath, dirnames, filenames in os.walk(root_path):
+        if 'repository.config' in filenames:
+            repositories.append(dirpath)
+
+    if not repositories:
+        repositories.append(root_path)
+
+    return repositories
+
+
+def check_offerings(repo_path, required_offerings, imcl_path):
     """
     Uses imcl to check a repository for a list of required offerings.
 
     Args:
         repo_path (str): The absolute file path to the repository directory
         required_offerings (list): List of software offering IDs to check for
+        imcl_path (str): Path to the imcl binary
 
     Returns:
         int: Exit code (0 for success, non-zero for failure)
     """
-    if not check_imcl_available():
+    if not check_imcl_available(imcl_path):
         sys.stderr.write(
-            "ERROR: 'imcl' command not found. Please ensure IBM Installation Manager "
-            "is installed and 'imcl' is in your system PATH.\n"
+            f"ERROR: 'imcl' command not found at '{imcl_path}'. "
+            "Please ensure IBM Installation Manager is installed and the path is correct.\n"
         )
         return 127
 
-    imcl_path = "imcl"
-    command = [imcl_path, "listAvailablePackages", "-repositories", repo_path]
+    repositories = find_repositories(repo_path)
+
+    if len(repositories) > 1:
+        print(f"Found {len(repositories)} nested repositories, searching all...")
+
+    repo_list = ",".join(repositories)
+    command = [imcl_path, "listAvailablePackages", "-repositories", repo_list]
 
     try:
         result = subprocess.run(
@@ -72,8 +112,8 @@ def check_offerings(repo_path, required_offerings):
 
     except FileNotFoundError:
         sys.stderr.write(
-            "ERROR: 'imcl' command not found. Please ensure IBM Installation Manager "
-            "is installed and 'imcl' is in your system PATH.\n"
+            f"ERROR: 'imcl' command not found at '{imcl_path}'. "
+            "Please ensure IBM Installation Manager is installed and the path is correct.\n"
         )
         return 127
     except subprocess.TimeoutExpired:
@@ -103,6 +143,8 @@ def main():
 Examples:
   %(prog)s --repo /opt/ibm/repo --software com.ibm.websphere.ND.v90
   %(prog)s -r /opt/ibm/repo -s com.ibm.websphere.ND.v90 com.ibm.java.sdk.v8
+  %(prog)s --repo /opt/ibm/repo --software com.ibm.websphere.ND.v90 \\
+      --imcl-path /opt/IBM/InstallationManager/eclipse/tools/imcl
         """
     )
 
@@ -119,9 +161,15 @@ Examples:
         help="One or more software offering IDs to check for (e.g., com.ibm.websphere.ND.v90)"
     )
 
+    parser.add_argument(
+        "-i", "--imcl-path",
+        default="imcl",
+        help="Path to the imcl binary (default: 'imcl' from PATH)"
+    )
+
     args = parser.parse_args()
 
-    exit_code = check_offerings(args.repo, args.software)
+    exit_code = check_offerings(args.repo, args.software, args.imcl_path)
     sys.exit(exit_code)
 
 
