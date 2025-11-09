@@ -309,24 +309,26 @@ Examples:
     )
 
     parser.add_argument(
-        "-s", "--software",
-        nargs='+',
-        help="One or more software offering IDs to check for (e.g., com.ibm.websphere.ND.v90)"
-    )
-
-    parser.add_argument(
         "-i", "--imcl-path",
         default="imcl",
         help="Path to the imcl binary (default: 'imcl' from PATH)"
     )
 
-    parser.add_argument(
+    mode_group = parser.add_mutually_exclusive_group(required=True)
+
+    mode_group.add_argument(
+        "-s", "--software",
+        nargs='+',
+        help="One or more software offering IDs to check for (e.g., com.ibm.websphere.ND.v90)"
+    )
+
+    mode_group.add_argument(
         "-l", "--list-offerings",
         action="store_true",
         help="List all available offerings in the repository"
     )
 
-    parser.add_argument(
+    mode_group.add_argument(
         "-d", "--dry-run",
         metavar="PACKAGE_ID",
         help="Perform a dry-run installation of the specified package"
@@ -346,14 +348,8 @@ Examples:
             sys.stderr.write("ERROR: --install-dir is required when using --dry-run\n")
             sys.exit(1)
         exit_code = dry_run_install(args.repo, args.dry_run, args.imcl_path, args.install_dir)
-    elif args.software:
-        exit_code = check_offerings(args.repo, args.software, args.imcl_path)
     else:
-        sys.stderr.write(
-            "ERROR: Either --software, --list-offerings, or --dry-run must be specified\n"
-        )
-        parser.print_help()
-        sys.exit(1)
+        exit_code = check_offerings(args.repo, args.software, args.imcl_path)
 
     sys.exit(exit_code)
 
