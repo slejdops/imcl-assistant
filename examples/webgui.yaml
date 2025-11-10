@@ -1,0 +1,62 @@
+# IBM Netcool/OMNIbus WebGUI Configuration
+# This example builds a Docker image containing the Web GUI component
+
+build_name: netcool-webgui
+base_image: redhat/ubi8:latest
+
+source_repos:
+  - path: ./repos/netcool
+    type: local
+
+  - path: ./repos/websphere
+    type: local
+    description: WebSphere Liberty repository for WebGUI
+
+components:
+  - name: websphere-liberty
+    type: custom
+    package_id: com.ibm.websphere.liberty.BASE
+    version: 21.0.0.3
+    install_dir: /opt/IBM/WebSphere/Liberty
+
+  - name: webgui
+    type: webgui
+    package_id: com.ibm.tivoli.netcool.webgui
+    version: 8.1.0
+    install_dir: /opt/IBM/netcool/gui/omnibus_webgui
+    env_vars:
+      WEBGUI_HOME: /opt/IBM/netcool/gui/omnibus_webgui
+      WLP_USER_DIR: /opt/IBM/WebSphere/Liberty/usr
+
+build_options:
+  multi_stage: true
+
+  build_args:
+    WEBGUI_VERSION: "8.1.0"
+    LIBERTY_VERSION: "21.0.0.3"
+
+  tags:
+    - latest
+    - "8.1.0"
+
+  registry:
+    url: registry.example.com/netcool
+
+  expose_ports:
+    - 9080  # HTTP
+    - 9443  # HTTPS
+
+  entrypoint:
+    - /opt/IBM/WebSphere/Liberty/bin/server
+
+  cmd:
+    - run
+    - defaultServer
+
+metadata:
+  version: "8.1.0"
+  maintainer: "netcool-team@example.com"
+  labels:
+    com.ibm.netcool.component: webgui
+    com.ibm.netcool.version: "8.1.0"
+    com.ibm.websphere.version: "21.0.0.3"

@@ -1,0 +1,19 @@
+{
+  "build_name": "netcool-minimal",
+  "base_image": "redhat/ubi8:latest",
+  "components": [
+    {
+      "name": "objectserver",
+      "type": "objectserver",
+      "install_dir": "/opt/IBM/netcool/omnibus"
+    }
+  ],
+  "build_options": {
+    "multi_stage": false,
+    "tags": ["latest"]
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "maintainer": "admin@example.com"
+  }
+}

@@ -1,0 +1,48 @@
+# IBM Netcool/OMNIbus Probe Configuration
+# This example builds a Docker image containing a Netcool Probe
+
+build_name: netcool-probe-syslog
+base_image: redhat/ubi8:latest
+
+source_repos:
+  - path: ./repos/netcool
+    type: local
+
+components:
+  - name: probe-syslog
+    type: probe
+    package_id: com.ibm.tivoli.netcool.omnibus.probe.syslog
+    version: 8.1.0
+    install_dir: /opt/IBM/netcool/omnibus
+    env_vars:
+      NCHOME: /opt/IBM/netcool/omnibus
+      OMNIHOME: /opt/IBM/netcool/omnibus
+      PATH: /opt/IBM/netcool/omnibus/probes/linux2x86:$PATH
+
+build_options:
+  multi_stage: true
+
+  build_args:
+    PROBE_TYPE: syslog
+    OMNIBUS_VERSION: "8.1.0"
+
+  tags:
+    - latest
+    - syslog-8.1.0
+
+  registry:
+    url: registry.example.com/netcool
+
+  expose_ports:
+    - 514  # Syslog port
+
+  entrypoint:
+    - /opt/IBM/netcool/omnibus/probes/linux2x86/nco_p_syslog
+
+metadata:
+  version: "8.1.0"
+  maintainer: "netcool-team@example.com"
+  labels:
+    com.ibm.netcool.component: probe
+    com.ibm.netcool.probe.type: syslog
+    com.ibm.netcool.version: "8.1.0"

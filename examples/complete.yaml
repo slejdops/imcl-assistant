@@ -1,0 +1,98 @@
+# Complete Configuration Example
+# This example demonstrates all available configuration options
+
+build_name: netcool-complete
+base_image: redhat/ubi8:latest
+
+# Multiple source repositories
+source_repos:
+  - path: ./repos/netcool
+    type: local
+    description: Netcool installation repository
+
+  - url: https://artifactory.example.com/netcool/8.1.0
+    type: artifactory
+    description: Remote Artifactory repository
+
+# Multiple components
+components:
+  - name: objectserver
+    type: objectserver
+    package_id: com.ibm.tivoli.netcool.omnibus.objectserver
+    version: 8.1.0
+    install_dir: /opt/IBM/netcool/omnibus
+    env_vars:
+      NCHOME: /opt/IBM/netcool/omnibus
+      OMNIHOME: /opt/IBM/netcool/omnibus
+
+  - name: probe-syslog
+    type: probe
+    package_id: com.ibm.tivoli.netcool.omnibus.probe.syslog
+    version: 8.1.0
+    install_dir: /opt/IBM/netcool/omnibus
+
+  - name: gateway
+    type: gateway
+    package_id: com.ibm.tivoli.netcool.omnibus.gateway
+    version: 8.1.0
+    install_dir: /opt/IBM/netcool/omnibus
+
+# Comprehensive build options
+build_options:
+  # Enable multi-stage builds for smaller images
+  multi_stage: true
+
+  # Build arguments passed to Docker
+  build_args:
+    OMNIBUS_VERSION: "8.1.0"
+    JAVA_VERSION: "8"
+    INSTALL_MODE: silent
+
+  # Multiple tags
+  tags:
+    - latest
+    - "8.1.0"
+    - "8.1"
+    - production
+
+  # Registry configuration
+  registry:
+    url: registry.example.com/netcool
+    username: admin
+    # Password should be provided via environment or secrets manager
+
+  # Exposed ports
+  expose_ports:
+    - 4100  # ObjectServer
+    - 4101  # ObjectServer backup
+    - 514   # Syslog probe
+
+  # Container entrypoint
+  entrypoint:
+    - /opt/IBM/netcool/omnibus/bin/nco_objserv
+
+  # Default command arguments
+  cmd:
+    - -name
+    - AGG_P
+    - -verbose
+
+# Comprehensive metadata
+metadata:
+  version: "8.1.0"
+  maintainer: "netcool-team@example.com"
+
+  # Docker labels
+  labels:
+    com.ibm.netcool.component: complete
+    com.ibm.netcool.version: "8.1.0"
+    com.example.team: platform
+    com.example.environment: production
+    com.example.project: monitoring
+    org.opencontainers.image.title: Netcool Complete
+    org.opencontainers.image.description: IBM Netcool/OMNIbus with multiple components
+    org.opencontainers.image.vendor: IBM
+    org.opencontainers.image.version: "8.1.0"
+
+# IBM Installation Manager path
+imcl_path: /opt/IBM/InstallationManager/eclipse/tools/imcl

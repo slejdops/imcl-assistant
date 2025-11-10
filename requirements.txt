@@ -1,0 +1,14 @@
+# Netcool Docker Builder Dependencies
+
+# YAML support for configuration files
+PyYAML>=6.0
+
+# Docker SDK for Python (optional but recommended)
+# Install with: pip install docker
+docker>=6.0.0
+
+# Testing dependencies (optional - for development)
+# Install with: pip install -r requirements-dev.txt
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+# coverage>=7.0.0

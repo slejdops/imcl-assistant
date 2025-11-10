@@ -1,0 +1,65 @@
+# IBM Netcool/OMNIbus ObjectServer Configuration
+# This example builds a Docker image containing the ObjectServer component
+
+build_name: netcool-objectserver
+base_image: redhat/ubi8:latest
+
+# Source repositories containing IBM installation packages
+source_repos:
+  - path: ./repos/netcool
+    type: local
+    description: Local Netcool installation repository
+
+# Components to install
+components:
+  - name: objectserver
+    type: objectserver
+    package_id: com.ibm.tivoli.netcool.omnibus.objectserver
+    version: 8.1.0
+    install_dir: /opt/IBM/netcool/omnibus
+    env_vars:
+      NCHOME: /opt/IBM/netcool/omnibus
+      OMNIHOME: /opt/IBM/netcool/omnibus
+      PATH: /opt/IBM/netcool/omnibus/bin:$PATH
+
+# Build options
+build_options:
+  multi_stage: true
+
+  build_args:
+    OMNIBUS_VERSION: "8.1.0"
+    INSTALL_MODE: silent
+
+  tags:
+    - latest
+    - "8.1.0"
+    - "8.1"
+
+  registry:
+    url: registry.example.com/netcool
+    username: admin
+    # Note: Password should be provided via environment variable or secret
+
+  expose_ports:
+    - 4100  # ObjectServer default port
+    - 4101  # ObjectServer backup port
+
+  entrypoint:
+    - /opt/IBM/netcool/omnibus/bin/nco_objserv
+
+  cmd:
+    - -name
+    - AGG_P
+
+# Image metadata
+metadata:
+  version: "8.1.0"
+  maintainer: "netcool-team@example.com"
+  labels:
+    com.ibm.netcool.component: objectserver
+    com.ibm.netcool.version: "8.1.0"
+    com.example.team: platform
+    com.example.environment: production
+
+# IMCL path (optional, defaults to 'imcl')
+imcl_path: /opt/IBM/InstallationManager/eclipse/tools/imcl

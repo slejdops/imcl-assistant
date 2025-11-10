@@ -36,3 +36,35 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Docker build artifacts
+Dockerfile
+.dockerignore
+build/
+build_logs/
+*.tar
+*.tar.gz
+
+# Docker build state
+build_state.json
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+coverage.xml
+*.cover
+
+# IBM Installation Manager
+repos/
+*.jar
+*.zip
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
